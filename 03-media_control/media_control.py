@@ -6,11 +6,8 @@ from pynput.keyboard import Key, Controller, Listener
 import os
 
 model_path = './01-hyperparameters/gesture_recognition.keras' 
-if not os.path.exists(model_path):
-    print("Please run this script from the assignment root directory (assignment-05-cnn-mpseidel18)")
-    exit()
 
-label_names = ['like', 'rock', 'peace']
+label_names = ['like', 'no_gesture', 'rock', 'peace']
 CONFIDENCE_THRESHOLD = 0.80
 EDGE_DENSITY_THRESHOLD = 800.0
 COOLDOWN_SKIP = 2
@@ -80,7 +77,7 @@ while running:
     #use canny to detect hand
 
     gray_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-    blurred_roi = cv2.GaussianBlur(gray_roi, (7, 7), 0) # Blur to remove background noise/shadows
+    blurred_roi = cv2.GaussianBlur(gray_roi, (7, 7), 0)
     edges = cv2.Canny(blurred_roi, 30, 100)
     edge_density = np.sum(edges) / 255.0
     
@@ -92,7 +89,7 @@ while running:
     if edge_density > EDGE_DENSITY_THRESHOLD:
         status_text = "Hand Detected - Analyzing..."
         
-        # predict first so we can assign custom cooldowns (volume up = fast spam, skip = slow)
+        # predict first so we can assign custom cooldowns
         roi_for_cnn = cv2.flip(roi, 1)
         preprocessed = preprocess_image(roi_for_cnn)
         pred = model.predict(np.expand_dims(preprocessed, axis=0), verbose=0)
@@ -121,17 +118,20 @@ while running:
                     print("Action: Play/Pause Track")
                     keyboard.press(Key.media_play_pause)
                     keyboard.release(Key.media_play_pause)
+                    action_triggered = True
                 elif gesture == 'like':
                     print("Action: Increase Volume")
                     keyboard.press(Key.media_volume_up)
                     keyboard.release(Key.media_volume_up)
+                    action_triggered = True
                 elif gesture == 'rock':
                     print("Action: Skip Track")
                     keyboard.press(Key.media_next)
                     keyboard.release(Key.media_next)
+                    action_triggered = True
                 
-                action_triggered = True
-                current_cooldown = req_cooldown
+                if action_triggered:
+                    current_cooldown = req_cooldown
     else:
         status_text = "Wall / No Gesture"
         

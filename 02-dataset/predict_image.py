@@ -18,9 +18,7 @@ output_cm_path = './02-dataset/conf-matrix.png'
 print("Loading model...")
 model = tf.keras.models.load_model(model_path)
 
-# label mappings (based on assignment instructions)
-label_names = ['like', 'rock', 'peace'] 
-# adding 'no_gesture' so it appears on the confusion matrix axis
+label_names = ['like', 'no_gesture', 'rock', 'peace'] 
 cm_labels = ['like', 'rock', 'peace', 'no_gesture']
 
 def preprocess_image(img):
